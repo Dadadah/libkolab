@@ -105,3 +105,6 @@ $config['kolab_principal_discovery_path_append'] = '';
 
 // What path to fetch principals from, as this library does not yet support auto discovery for principals. '/principals/user/' for kolab, '/dav/pal' for Stalwart
 $config['kolab_principal_home'] = '/principals/user/';
+
+// Force kolab to use bearer authentication for oauth2.
+$config['kolab_use_oauth2'] = false;

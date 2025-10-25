@@ -44,6 +44,7 @@ class kolab_dav_client
 
     protected $user;
     protected $password;
+    protected $bearer;
     protected $path;
     protected $rc;
     protected $responseHeaders = [];
@@ -64,7 +65,20 @@ class kolab_dav_client
             $url = str_replace(rawurlencode($this->user) . ':' . rawurlencode($this->password) . '@', '', $url);
         } else {
             $this->user     = $this->rc->get_user_name();
-            $this->password = $this->rc->get_user_password();
+            if ((bool) $rcube->config->get('kolab_use_oauth2')) {
+                if (
+                    isset($_SESSION['oauth_token'])
+                    && is_array($_SESSION['oauth_token'])
+                    && isset($_SESSION['oauth_token']['access_token'])
+                    && is_string($_SESSION['oauth_token']['access_token'])
+                ) {
+                    $this->bearer = $_SESSION['oauth_token']['access_token'];
+                } else {
+                    throw new Exception("OAUTH2 bearer authentication requested, but no token available in roundcube");
+                }
+            } else {
+                $this->password = $this->rc->get_user_password();
+            }
         }
 
         $this->url = $url;
@@ -91,7 +105,13 @@ class kolab_dav_client
         try {
             $request = $this->initRequest($this->url . $path, $method, $request_config);
 
-            $request->setAuth($this->user, $this->password);
+            if (!empty($this->password)) {
+                $request->setAuth($this->user, $this->password);
+            }
+
+            if (!empty($this->bearer)) {
+                $request->setHeader(['Authorization' => 'Bearer ' . $this->bearer]);
+            }
 
             if ($body) {
                 $request->setBody($body);
