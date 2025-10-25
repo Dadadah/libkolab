@@ -152,7 +152,7 @@ class kolab_dav_client
             . '</d:propfind>';
 
         // Note: Cyrus CardDAV service requires Depth:1 (CalDAV works without it)
-        $response = $this->request('/', 'PROPFIND', $body, ['Depth' => 1, 'Prefer' => 'return-minimal']);
+        $response = $this->request('/' . $rcube->config->get('kolab_principal_discovery_path_append'), 'PROPFIND', $body, ['Depth' => 1, 'Prefer' => 'return-minimal']);
 
         if (empty($response)) {
             return false;
@@ -189,7 +189,7 @@ class kolab_dav_client
         $homes = [];
 
         if ($element = $response->getElementsByTagName('response')->item(0)) {
-            if ($prop = $element->getElementsByTagName('prop')->item(0)) {
+            foreach ($element->getElementsByTagName('prop') as $prop) {
                 foreach ($prop->childNodes as $home) {
                     if ($home->firstChild && $home->firstChild->localName == 'href') {
                         $href = $home->firstChild->nodeValue;
@@ -217,7 +217,7 @@ class kolab_dav_client
     {
         // FIXME: Can this be discovered?
         if ($type == 'PRINCIPAL') {
-            $path = '/principals/user/';
+            $path = $rcube->config->get('kolab_principal_home');
             if ($this->path) {
                 $path = '/' . trim($this->path, '/') . $path;
             }
