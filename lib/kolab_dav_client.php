@@ -64,8 +64,8 @@ class kolab_dav_client
 
             $url = str_replace(rawurlencode($this->user) . ':' . rawurlencode($this->password) . '@', '', $url);
         } else {
-            $this->user     = $this->rc->get_user_name();
-            if ((bool) $rcube->config->get('kolab_use_oauth2')) {
+            $this->user = $this->rc->get_user_name();
+            if ((bool) $this->rc->config->get('kolab_use_oauth2')) {
                 if (
                     isset($_SESSION['oauth_token'])
                     && is_array($_SESSION['oauth_token'])
