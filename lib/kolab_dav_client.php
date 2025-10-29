@@ -171,7 +171,7 @@ class kolab_dav_client
             . '</d:propfind>';
 
         // Note: Cyrus CardDAV service requires Depth:1 (CalDAV works without it)
-        $response = $this->request('/' . $$this->rc->config->get('kolab_principal_discovery_path_append'), 'PROPFIND', $body, ['Depth' => 1, 'Prefer' => 'return-minimal']);
+        $response = $this->request('/' . $this->rc->config->get('kolab_principal_discovery_path_append'), 'PROPFIND', $body, ['Depth' => 1, 'Prefer' => 'return-minimal']);
 
         if (empty($response)) {
             return false;
