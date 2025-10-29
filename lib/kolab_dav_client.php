@@ -90,8 +90,7 @@ class kolab_dav_client
      */
     protected function request($path, $method, $body = '', $headers = [])
     {
-        $rcube = rcube::get_instance();
-        $debug = (bool) $rcube->config->get('dav_debug');
+        $debug = (bool) $this->rc->config->get('dav_debug');
 
         $request_config = [
             'store_body'       => true,
@@ -172,7 +171,7 @@ class kolab_dav_client
             . '</d:propfind>';
 
         // Note: Cyrus CardDAV service requires Depth:1 (CalDAV works without it)
-        $response = $this->request('/' . $rcube->config->get('kolab_principal_discovery_path_append'), 'PROPFIND', $body, ['Depth' => 1, 'Prefer' => 'return-minimal']);
+        $response = $this->request('/' . $$this->rc->config->get('kolab_principal_discovery_path_append'), 'PROPFIND', $body, ['Depth' => 1, 'Prefer' => 'return-minimal']);
 
         if (empty($response)) {
             return false;
@@ -237,7 +236,7 @@ class kolab_dav_client
     {
         // FIXME: Can this be discovered?
         if ($type == 'PRINCIPAL') {
-            $path = $rcube->config->get('kolab_principal_home');
+            $path = $this->rc->config->get('kolab_principal_home');
             if ($this->path) {
                 $path = '/' . trim($this->path, '/') . $path;
             }
@@ -1226,13 +1225,12 @@ class kolab_dav_client
      */
     protected function initRequest($url = '', $method = 'GET', $config = [])
     {
-        $rcube       = rcube::get_instance();
-        $http_config = (array) $rcube->config->get('kolab_http_request');
+        $http_config = (array) $this->rc->config->get('kolab_http_request');
 
         // deprecated configuration options
         if (empty($http_config)) {
             foreach (['ssl_verify_peer', 'ssl_verify_host'] as $option) {
-                $value = $rcube->config->get('kolab_' . $option, true);
+                $value = $this->rc->config->get('kolab_' . $option, true);
                 if (is_bool($value)) {
                     $http_config[$option] = $value;
                 }
@@ -1273,12 +1271,11 @@ class kolab_dav_client
      */
     protected function get_cache()
     {
-        $rcube = rcube::get_instance();
-        if ($cache_type = $rcube->config->get('dav_cache', 'db')) {
-            $cache_ttl  = $rcube->config->get('dav_cache_ttl', '10m');
+        if ($cache_type = $this->rc->config->get('dav_cache', 'db')) {
+            $cache_ttl  = $this->rc->config->get('dav_cache_ttl', '10m');
             $cache_name = 'DAV';
 
-            return $rcube->get_cache($cache_name, $cache_type, $cache_ttl);
+            return $this->rc->get_cache($cache_name, $cache_type, $cache_ttl);
         }
     }
 }
