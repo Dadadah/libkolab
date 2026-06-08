@@ -66,16 +66,24 @@ class kolab_dav_client
         } else {
             $this->user = $this->rc->get_user_name();
             if ((bool) $this->rc->config->get('kolab_use_oauth2')) {
-                if (
-                    isset($_SESSION['oauth_token'])
-                    && is_array($_SESSION['oauth_token'])
-                    && isset($_SESSION['oauth_token']['access_token'])
-                    && is_string($_SESSION['oauth_token']['access_token'])
-                ) {
-                    $this->bearer = $_SESSION['oauth_token']['access_token'];
-                } else {
+                $acctoken = false;
+                if (isset($_SESSION['oauth_token']) && is_array($_SESSION['oauth_token'])) {
+                    $acctoken = $this->rc->decrypt((string) $_SESSION['password']);
+
+                    if ($acctoken !== false) {
+                        // authorization stored in SESSION[password] is like "Bearer <token>", so cut the token type
+                        $token_type = ((string) $_SESSION['oauth_token']['token_type']) . " ";
+                        $token_type_len = strlen($token_type);
+                        if (strncasecmp($acctoken, $token_type, $token_type_len) === 0) {
+                            $acctoken = substr($acctoken, $token_type_len);
+                        }
+                    }
+                }
+
+                if ($acctoken === false) {
                     throw new Exception("OAUTH2 bearer authentication requested, but no token available in roundcube");
                 }
+                $this->bearer = $acctoken;
             } else {
                 $this->password = $this->rc->get_user_password();
             }
